@@ -1,0 +1,17 @@
+APP_NAME=نظام إدارة مصروفات الإنتاج الفني
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:oa1iAO5nLuw10KKYMwHvqZc2WNS3TUa0GPTgoEbYXXw=
+
+DB_CONNECTION=pgsql
+# Railway سيضيف DATABASE_URL تلقائياً
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+
+DEMO_MODE=true
+DEMO_USER_EMAIL=admin@pems.com
+DEMO_USER_PASSWORD=demo123
+
+GOOGLE_MAPS_KEY=AIzaSyBFw0Qbyq9zTFTd-tUY6dw901SwHSR3g6U

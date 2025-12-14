@@ -1,0 +1,158 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* خط Arial البسيط */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+/* ألوان حسب ملف التحليل */
+:root {
+  /* ألوان فئات المصروفات */
+  --color-actors: #9333EA;      /* 🟣 بنفسجي - ممثلين */
+  --color-food: #F97316;        /* 🟠 برتقالي - طعام */
+  --color-transport: #3B82F6;   /* 🔵 أزرق فاتح - نقل */
+  --color-locations: #EC4899;   /* 🌸 وردي - مواقع */
+  --color-equipment: #1E40AF;   /* 🔵 أزرق - معدات */
+  --color-costumes: #DB2777;    /* 💗 فوشي - أزياء */
+  --color-crew: #10B981;        /* 🟢 أخضر - طاقم */
+  --color-admin: #6B7280;       /* ⚫ رمادي - إداري */
+  --color-emergency: #EF4444;   /* 🔴 أحمر - طوارئ */
+  
+  /* ألوان أساسية - أبيض وأزرق طبيعي */
+  --primary-blue: #3B82F6;
+  --secondary-blue: #60A5FA;
+  --light-blue: #EFF6FF;
+  --white: #FFFFFF;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+}
+
+* {
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 13px;
+}
+
+body {
+  background: var(--white);
+  min-height: 100vh;
+  font-size: 13px;
+  color: #374151;
+}
+
+/* أحجام نصوص مهنية */
+h1 { font-size: 1.125rem; font-weight: 600; color: #1F2937; }
+h2 { font-size: 1rem; font-weight: 600; color: #1F2937; }
+h3 { font-size: 0.875rem; font-weight: 600; color: #374151; }
+h4 { font-size: 0.75rem; font-weight: 500; color: #374151; }
+
+/* تصميم مهني للبطاقات */
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+}
+
+.card-header {
+  @apply bg-gray-50 text-gray-800 p-4 rounded-t-lg border-b border-gray-200;
+}
+
+/* أزرار مهنية */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-sm transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-md border border-gray-300 text-sm transition-colors;
+}
+
+/* جداول مهنية */
+.table-modern {
+  @apply w-full bg-white rounded-lg shadow-sm border border-gray-200;
+}
+
+.table-modern thead {
+  @apply bg-gray-50;
+}
+
+.table-modern th {
+  @apply px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase;
+}
+
+.table-modern td {
+  @apply px-4 py-3 text-sm text-gray-900 border-b border-gray-100;
+}
+
+/* إحصائيات مهنية */
+.stat-card {
+  @apply bg-white rounded-lg shadow-sm p-4 border border-gray-200;
+}
+
+/* تنبيهات مهنية */
+.alert {
+  @apply p-3 rounded-md border-l-4 text-sm;
+}
+
+.alert-success {
+  @apply bg-green-50 border-green-400 text-green-800;
+}
+
+.alert-warning {
+  @apply bg-yellow-50 border-yellow-400 text-yellow-800;
+}
+
+.alert-danger {
+  @apply bg-red-50 border-red-400 text-red-800;
+}
+
+/* شارات مهنية */
+.badge {
+  @apply inline-flex items-center px-2 py-1 rounded text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.badge-danger {
+  @apply bg-red-100 text-red-800;
+}
+
+/* نماذج مهنية */
+.form-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm;
+}
+
+.form-select {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm;
+}
+
+/* تنقل مهني وأنيق */
+.nav-link {
+  @apply flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white/90 hover:text-white hover:bg-white/15 rounded-lg transition-all duration-200;
+}
+
+.nav-link.active {
+  @apply bg-white/25 text-white shadow-sm;
+}
+
+.nav-link svg {
+  @apply w-4 h-4;
+}
+
+/* تحسين الشادو للقوائم المنسدلة */
+.dropdown-shadow {
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* شادو ناعم للبطاقات */
+.soft-shadow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* شادو متوسط للعناصر المرفوعة */
+.medium-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
