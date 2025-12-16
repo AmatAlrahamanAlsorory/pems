@@ -28,4 +28,4 @@ RUN chown -R www-data:www-data /var/www/html/storage \
     && chown -R www-data:www-data /var/www/html/bootstrap/cache
 
 # (7) أمر التشغيل
-CMD php artisan serve --host 0.0.0.0 --port 8080
+CMD php artisan migrate --force && php artisan serve --host 0.0.0.0 --port 8080
