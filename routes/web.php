@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,8 +15,35 @@ Route::get('/dashboard', function () {
             'total_budget' => \App\Models\Project::sum('total_budget'),
             'active_custodies' => \App\Models\Custody::where('status', 'active')->count(),
             'today_expenses' => \App\Models\Expense::whereDate('created_at', today())->count(),
+            'total_spent' => \App\Models\Expense::where('status', 'approved')->sum('amount'),
+            'pending_expenses' => \App\Models\Expense::where('status', 'pending')->count(),
         ];
     });
+    
+    // بيانات الرسوم البيانية
+    $chartData = [
+        'project_status' => [
+            'normal' => \App\Models\Project::whereRaw('(CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100) < 70')->count(),
+            'warning' => \App\Models\Project::whereRaw('(CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100) >= 70 AND (CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100) < 90')->count(),
+            'critical' => \App\Models\Project::whereRaw('(CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100) >= 90')->count(),
+        ],
+        'category_spending' => \DB::table('expenses')
+            ->join('expense_categories', 'expenses.expense_category_id', '=', 'expense_categories.id')
+            ->select('expense_categories.name', \DB::raw('SUM(CAST(expenses.amount AS REAL)) as amount'))
+            ->where('expenses.status', 'approved')
+            ->groupBy('expense_categories.id', 'expense_categories.name')
+            ->orderBy('amount', 'desc')
+            ->limit(10)
+            ->get()
+            ->toArray(),
+        'monthly_expenses' => \DB::table('expenses')
+            ->select(\DB::raw('strftime(\'%m\', expense_date) as month'), \DB::raw('SUM(CAST(amount AS REAL)) as amount'))
+            ->where('status', 'approved')
+            ->whereRaw('strftime(\'%Y\', expense_date) = ?', [date('Y')])
+            ->groupBy(\DB::raw('strftime(\'%m\', expense_date)'))
+            ->pluck('amount', 'month')
+            ->toArray()
+    ];
     
     $notifications = \App\Models\Notification::where('user_id', auth()->id())
         ->where('is_read', false)
@@ -23,16 +51,25 @@ Route::get('/dashboard', function () {
         ->limit(5)
         ->get();
         
-    $criticalProjects = \App\Models\Project::whereRaw('(spent_amount / total_budget * 100) >= 90')
+    $criticalProjects = \App\Models\Project::whereRaw('CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100 >= 90')
+        ->selectRaw('*, CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100 as budget_percentage')
         ->limit(5)
         ->get();
         
     $pendingApprovals = \App\Models\Approval::where('status', 'pending')
-        ->with('approvable')
+        ->with(['approvable'])
+        ->whereHas('approvable')
         ->limit(5)
-        ->get();
+        ->get()
+        ->each(function($approval) {
+            if ($approval->approvable_type === 'App\\Models\\Expense') {
+                $approval->approvable->load('expenseCategory');
+            } elseif ($approval->approvable_type === 'App\\Models\\Custody') {
+                $approval->approvable->load('project');
+            }
+        });
     
-    return view('dashboard', compact('stats', 'notifications', 'criticalProjects', 'pendingApprovals'));
+    return view('dashboard', compact('stats', 'chartData', 'notifications', 'criticalProjects', 'pendingApprovals'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -42,7 +79,19 @@ Route::middleware('auth')->group(function () {
     
     // === إدارة المستخدمين ===
     Route::middleware('permission:manage_users')->group(function () {
-        Route::resource('users', \App\Http\Controllers\UserController::class);
+        Route::get('users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+        Route::get('users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
+        Route::post('users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
+    });
+    
+    Route::middleware('permission:edit_user')->group(function () {
+        Route::get('users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
+    });
+    
+    Route::middleware('permission:delete_user')->group(function () {
+        Route::delete('users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
     });
     
     // === إدارة المشاريع ===
@@ -61,12 +110,41 @@ Route::middleware('auth')->group(function () {
     });
     
     // === إدارة المواقع والأشخاص ===
+    // خريطة المواقع (يجب أن تكون قبل resource)
     Route::middleware('permission:manage_locations')->group(function () {
-        Route::resource('locations', \App\Http\Controllers\LocationController::class);
+        Route::get('locations/map', [\App\Http\Controllers\LocationController::class, 'map'])->name('locations.map');
+        Route::get('locations', [\App\Http\Controllers\LocationController::class, 'index'])->name('locations.index');
+        Route::get('locations/{location}', [\App\Http\Controllers\LocationController::class, 'show'])->name('locations.show');
+    });
+    
+    Route::middleware('permission:manage_locations')->group(function () {
+        Route::get('locations/create', [\App\Http\Controllers\LocationController::class, 'create'])->name('locations.create');
+        Route::post('locations', [\App\Http\Controllers\LocationController::class, 'store'])->name('locations.store');
+    });
+    
+    Route::middleware('permission:edit_location')->group(function () {
+        Route::get('locations/{location}/edit', [\App\Http\Controllers\LocationController::class, 'edit'])->name('locations.edit');
+        Route::put('locations/{location}', [\App\Http\Controllers\LocationController::class, 'update'])->name('locations.update');
+    });
+    
+    Route::middleware('permission:delete_location')->group(function () {
+        Route::delete('locations/{location}', [\App\Http\Controllers\LocationController::class, 'destroy'])->name('locations.destroy');
     });
     
     Route::middleware('permission:manage_people')->group(function () {
-        Route::resource('people', \App\Http\Controllers\PersonController::class);
+        Route::get('people', [\App\Http\Controllers\PersonController::class, 'index'])->name('people.index');
+        Route::get('people/create', [\App\Http\Controllers\PersonController::class, 'create'])->name('people.create');
+        Route::post('people', [\App\Http\Controllers\PersonController::class, 'store'])->name('people.store');
+        Route::get('people/{person}', [\App\Http\Controllers\PersonController::class, 'show'])->name('people.show');
+    });
+    
+    Route::middleware('permission:edit_person')->group(function () {
+        Route::get('people/{person}/edit', [\App\Http\Controllers\PersonController::class, 'edit'])->name('people.edit');
+        Route::put('people/{person}', [\App\Http\Controllers\PersonController::class, 'update'])->name('people.update');
+    });
+    
+    Route::middleware('permission:delete_person')->group(function () {
+        Route::delete('people/{person}', [\App\Http\Controllers\PersonController::class, 'destroy'])->name('people.destroy');
     });
     
     // === إدارة الميزانيات ===
@@ -93,7 +171,6 @@ Route::middleware('auth')->group(function () {
         Route::get('projects', [\App\Http\Controllers\ProjectController::class, 'index'])->name('projects.index');
         Route::get('projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
         Route::get('projects-critical', [\App\Http\Controllers\ProjectController::class, 'critical'])->name('projects.critical');
-        Route::get('locations/map', [\App\Http\Controllers\LocationController::class, 'map'])->name('locations.map');
         Route::post('locations/{location}/gps', [\App\Http\Controllers\LocationController::class, 'updateGPS'])->name('locations.gps');
     });
     
@@ -102,6 +179,15 @@ Route::middleware('auth')->group(function () {
     Route::post('custodies', [\App\Http\Controllers\CustodyController::class, 'store'])
         ->middleware('budget.check')
         ->name('custodies.store');
+    
+    Route::middleware('permission:edit_custody')->group(function () {
+        Route::get('custodies/{custody}/edit', [\App\Http\Controllers\CustodyController::class, 'edit'])->name('custodies.edit');
+        Route::put('custodies/{custody}', [\App\Http\Controllers\CustodyController::class, 'update'])->name('custodies.update');
+    });
+    
+    Route::middleware('permission:delete_custody')->group(function () {
+        Route::delete('custodies/{custody}', [\App\Http\Controllers\CustodyController::class, 'destroy'])->name('custodies.destroy');
+    });
     
     // === موافقة المصروفات ===
     Route::middleware('permission:approve_expense')->group(function () {
@@ -113,6 +199,15 @@ Route::middleware('auth')->group(function () {
     Route::post('expenses', [\App\Http\Controllers\ExpenseController::class, 'store'])
         ->middleware('budget.check')
         ->name('expenses.store');
+    
+    Route::middleware('permission:edit_expense')->group(function () {
+        Route::get('expenses/{expense}/edit', [\App\Http\Controllers\ExpenseController::class, 'edit'])->name('expenses.edit');
+        Route::put('expenses/{expense}', [\App\Http\Controllers\ExpenseController::class, 'update'])->name('expenses.update');
+    });
+    
+    Route::middleware('permission:delete_expense')->group(function () {
+        Route::delete('expenses/{expense}', [\App\Http\Controllers\ExpenseController::class, 'destroy'])->name('expenses.destroy');
+    });
     
     // === عرض البيانات ===
     Route::middleware('permission:view_custody')->group(function () {
@@ -145,7 +240,28 @@ Route::middleware('auth')->group(function () {
             Route::get('location', [\App\Http\Controllers\ReportController::class, 'locationReport'])->name('location');
             Route::get('custody', [\App\Http\Controllers\ReportController::class, 'custodyReport'])->name('custody');
             Route::get('person', [\App\Http\Controllers\ReportController::class, 'personReport'])->name('person');
-            Route::get('dashboard-data', [\App\Http\Controllers\ReportController::class, 'dashboardData'])->name('dashboard-data');
+            Route::get('dashboard-data', function() {
+                return response()->json([
+                    'project_status' => [
+                        'normal' => \App\Models\Project::whereRaw('CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100 < 70')->count(),
+                        'warning' => \App\Models\Project::whereRaw('CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100 >= 70 AND CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100 < 90')->count(),
+                        'critical' => \App\Models\Project::whereRaw('CAST(spent_amount AS REAL) / CAST(total_budget AS REAL) * 100 >= 90')->count(),
+                    ],
+                    'category_spending' => \DB::table('expenses')
+                        ->join('expense_categories', 'expenses.expense_category_id', '=', 'expense_categories.id')
+                        ->select('expense_categories.name', \DB::raw('SUM(expenses.amount) as amount'))
+                        ->where('expenses.status', 'approved')
+                        ->groupBy('expense_categories.id', 'expense_categories.name')
+                        ->orderBy('amount', 'desc')
+                        ->get(),
+                    'monthly_expenses' => \DB::table('expenses')
+                        ->select(\DB::raw('strftime(\'%m\', expense_date) as month'), \DB::raw('SUM(amount) as amount'))
+                        ->where('status', 'approved')
+                        ->whereRaw('strftime(\'%Y\', expense_date) = ?', [date('Y')])
+                        ->groupBy(\DB::raw('strftime(\'%m\', expense_date)'))
+                        ->pluck('amount', 'month')
+                ]);
+            })->name('dashboard-data');
             Route::get('project/print', [\App\Http\Controllers\ReportController::class, 'printProjectReport'])->name('project.print');
         });
     });
@@ -333,40 +449,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/periodic-budgets/check', [\App\Http\Controllers\PeriodicBudgetController::class, 'checkPeriodic']);
     
     // واجهة التحليلات التنبؤية
-    Route::get('/analytics/{project}', function($projectId) {
-        $project = \App\Models\Project::findOrFail($projectId);
-        return view('analytics.predictive', compact('project'));
-    })->name('analytics.predictive');
+    Route::middleware('permission:view_reports')->group(function () {
+        Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/analytics/{project}', [\App\Http\Controllers\AnalyticsController::class, 'predictive'])->name('analytics.predictive');
+    });
+    
+    // الرسوم البيانية المحسنة
+    Route::get('/enhanced-charts', function() {
+        return view('enhanced-charts');
+    })->name('enhanced-charts');
     
     Route::get('/offline', function() {
         return view('offline');
     })->name('offline');
     
-    // خريطة المواقع التفاعلية
-    Route::get('/locations/map', function() {
-        $locations = \App\Models\Location::with(['project', 'expenses'])
-            ->get()
-            ->map(function($location) {
-                return [
-                    'id' => $location->id,
-                    'name' => $location->name,
-                    'latitude' => $location->latitude,
-                    'longitude' => $location->longitude,
-                    'address' => $location->address,
-                    'status' => $location->status ?? 'active',
-                    'project_id' => $location->project_id,
-                    'project' => $location->project,
-                    'budget' => $location->budget ?? 0,
-                    'spent_amount' => $location->expenses->sum('amount'),
-                    'expenses_count' => $location->expenses->count(),
-                    'last_activity' => $location->expenses->max('expense_date')
-                ];
-            });
-            
-        $projects = \App\Models\Project::all();
-        
-        return view('locations.map', compact('locations', 'projects'));
-    })->name('locations.map');
+
     
     // API للمواقع
     Route::post('/api/locations', function(\Illuminate\Http\Request $request) {

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المخطط المحسن - نظام إدارة مصروفات الإنتاج الفني</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 1s ease-out 0.3s both;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #feca57 100%);
+            border-radius: 24px 24px 0 0;
+        }
+
+        .chart-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .chart-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .chart-title i {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-subtitle {
+            font-size: 1.1rem;
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.6);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 600px;
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .legend-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-text {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .legend-value {
+            margin-right: auto;
+            font-weight: 700;
+            color: #4a5568;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .chart-container {
+                padding: 2rem;
+            }
+            
+            .chart-title {
+                font-size: 1.8rem;
+            }
+            
+            .chart-wrapper {
+                height: 400px;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <i class="fas fa-chart-line"></i>
+                نظام إدارة مصروفات الإنتاج الفني
+            </h1>
+            <p>تحليل المصروفات بتقنية حديثة وتصميم عصري</p>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2 class="chart-title">
+                    <i class="fas fa-chart-bar"></i>
+                    المصروفات حسب الفئات
+                </h2>
+                <p class="chart-subtitle">
+                    عرض تفاعلي محسن لتوزيع المصروفات على الفئات المختلفة
+                </p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">
+                    <div class="stat-value">2.28M</div>
+                    <div class="stat-label">إجمالي المصروفات</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4ecdc4, #44a08d);">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">فئات المصروفات</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #45b7d1, #2196f3);">
+                    <div class="stat-value">92%</div>
+                    <div class="stat-label">معدل الاستخدام</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #96ceb4, #feca57);">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">المشاريع النشطة</div>
+                </div>
+            </div>
+
+            <div class="chart-wrapper">
+                <canvas id="modernChart"></canvas>
+            </div>
+
+            <div class="legend-container" id="customLegend">
+                <!-- سيتم إنشاء العناصر ديناميكياً -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ModernChart {
+            constructor() {
+                this.colors = [
+                    {
+                        bg: 'rgba(255, 107, 107, 0.8)',
+                        border: '#ff6b6b',
+                        gradient: ['#ff6b6b', '#ee5a52']
+                    },
+                    {
+                        bg: 'rgba(78, 205, 196, 0.8)',
+                        border: '#4ecdc4',
+                        gradient: ['#4ecdc4', '#44a08d']
+                    },
+                    {
+                        bg: 'rgba(69, 183, 209, 0.8)',
+                        border: '#45b7d1',
+                        gradient: ['#45b7d1', '#2196f3']
+                    },
+                    {
+                        bg: 'rgba(150, 206, 180, 0.8)',
+                        border: '#96ceb4',
+                        gradient: ['#96ceb4', '#feca57']
+                    },
+                    {
+                        bg: 'rgba(254, 202, 87, 0.8)',
+                        border: '#feca57',
+                        gradient: ['#feca57', '#f39c12']
+                    }
+                ];
+
+                this.data = [
+                    { name: 'مصروفات الممثلين والفنانين', amount: 850000 },
+                    { name: 'مصروفات الطعام والضيافة', amount: 620000 },
+                    { name: 'مصروفات الديكور والإكسسوار', amount: 380000 },
+                    { name: 'مصروفات النقل والمواصلات', amount: 245000 },
+                    { name: 'مصروفات المعدات والتقنية', amount: 180000 }
+                ];
+
+                this.init();
+            }
+
+            init() {
+                this.createChart();
+                this.createCustomLegend();
+            }
+
+            createChart() {
+                const ctx = document.getElementById('modernChart');
+                if (!ctx) return;
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.data.map(item => item.name),
+                        datasets: [{
+                            label: 'المبلغ (ريال سعودي)',
+                            data: this.data.map(item => item.amount),
+                            backgroundColor: this.colors.map(color => color.bg),
+                            borderColor: this.colors.map(color => color.border),
+                            borderWidth: 3,
+                            borderRadius: 15,
+                            borderSkipped: false,
+                            barThickness: 60,
+                            maxBarThickness: 80
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        layout: {
+                            padding: {
+                                top: 20,
+                                bottom: 20,
+                                left: 20,
+                                right: 20
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: '#ffffff',
+                                bodyColor: '#ffffff',
+                                borderColor: '#667eea',
+                                borderWidth: 2,
+                                cornerRadius: 15,
+                                displayColors: false,
+                                titleFont: {
+                                    family: 'Cairo',
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    family: 'Cairo',
+                                    size: 14
+                                },
+                                padding: 15,
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label;
+                                    },
+                                    label: function(context) {
+                                        const value = new Intl.NumberFormat('ar-SA', {
+                                            style: 'currency',
+                                            currency: 'SAR',
+                                            minimumFractionDigits: 0
+                                        }).format(context.parsed.x);
+                                        return `المبلغ: ${value}`;
+                                    },
+                                    afterLabel: function(context) {
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((context.parsed.x / total) * 100).toFixed(1);
+                                        return `النسبة: ${percentage}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.08)',
+                                    drawBorder: false,
+                                    lineWidth: 1
+                                },
+                                ticks: {
+                                    font: {
+                                        family: 'Cairo',
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    color: '#4a5568',
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('ar-SA', {
+                                            notation: 'compact',
+                                            compactDisplay: 'short'
+                                        }).format(value);
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        family: 'Cairo',
+                                        size: 14,
+                                        weight: '700'
+                                    },
+                                    color: '#2d3748',
+                                    maxRotation: 0,
+                                    callback: function(value, index) {
+                                        const label = this.getLabelForValue(value);
+                                        return label.length > 35 ? label.substring(0, 35) + '...' : label;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2500,
+                            easing: 'easeInOutQuart'
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        }
+                    }
+                });
+            }
+
+            createCustomLegend() {
+                const legendContainer = document.getElementById('customLegend');
+                if (!legendContainer) return;
+
+                this.data.forEach((item, index) => {
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'legend-item';
+                    
+                    const formattedValue = new Intl.NumberFormat('ar-SA', {
+                        style: 'currency',
+                        currency: 'SAR',
+                        minimumFractionDigits: 0
+                    }).format(item.amount);
+
+                    const total = this.data.reduce((sum, item) => sum + item.amount, 0);
+                    const percentage = ((item.amount / total) * 100).toFixed(1);
+
+                    legendItem.innerHTML = `
+                        <div class="legend-color" style="background: ${this.colors[index].border}"></div>
+                        <div class="legend-text">${item.name}</div>
+                        <div class="legend-value">${formattedValue} (${percentage}%)</div>
+                    `;
+
+                    legendContainer.appendChild(legendItem);
+                });
+            }
+        }
+
+        // تهيئة المخطط عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            new ModernChart();
+        });
+
+        // إضافة تأثيرات التحريك
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'slideInUp 0.8s ease-out';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.chart-container, .stat-card').forEach(el => {
+            observer.observe(el);
+        });
+
+        // إضافة تأثير النبض للإحصائيات
+        setInterval(() => {
+            document.querySelectorAll('.stat-card').forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('pulse-animation');
+                    setTimeout(() => {
+                        card.classList.remove('pulse-animation');
+                    }, 2000);
+                }, index * 200);
+            });
+        }, 10000);
+    </script>
+</body>
+</html>

@@ -38,6 +38,13 @@
                         </svg>
                         موقعي الحالي
                     </button>
+                    
+                    <button id="save-current-location-btn" class="btn btn-success">
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                        </svg>
+                        حفظ الموقع الحالي
+                    </button>
                 </div>
             </div>
 
@@ -96,19 +103,19 @@
     </div>
 
     <!-- نافذة إضافة موقع جديد -->
-    <div id="add-location-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div id="add-location-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="z-index: 9999;">
         <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h3 class="text-lg font-semibold mb-4">إضافة موقع جديد</h3>
             
             <form id="add-location-form">
                 <div class="space-y-4">
                     <div>
-                        <label class="form-label">اسم الموقع</label>
-                        <input type="text" id="new-location-name" class="form-input" required>
+                        <label class="form-label">اسم الموقع *</label>
+                        <input type="text" id="new-location-name" class="form-input" required placeholder="مثال: استوديو التصوير الرئيسي">
                     </div>
                     
                     <div>
-                        <label class="form-label">المشروع</label>
+                        <label class="form-label">المشروع *</label>
                         <select id="new-location-project" class="form-select" required>
                             <option value="">اختر المشروع</option>
                             @foreach($projects as $project)
@@ -119,7 +126,7 @@
                     
                     <div>
                         <label class="form-label">العنوان</label>
-                        <input type="text" id="new-location-address" class="form-input">
+                        <input type="text" id="new-location-address" class="form-input" placeholder="سيتم تعبئته تلقائياً عند استخدام الموقع الحالي">
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
@@ -133,7 +140,10 @@
                         </div>
                     </div>
                     
-                    <p class="text-sm text-gray-600">انقر على الخريطة لتحديد الموقع</p>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p class="text-sm text-green-800 font-medium">تم تحديد الموقع على الخريطة ✓</p>
+                        <p class="text-xs text-green-600">يمكنك تعديل الإحداثيات يدوياً إذا لزم الأمر</p>
+                    </div>
                 </div>
                 
                 <div class="flex gap-2 mt-6">
@@ -146,6 +156,24 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        #add-location-modal {
+            z-index: 9999 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        #add-location-modal > div {
+            position: relative;
+            z-index: 10000;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
     
     <script>
         let map;
@@ -165,8 +193,10 @@
             // إضافة المواقع الموجودة
             addLocationsToMap();
             
-            // معالج النقر على الخريطة لإضافة موقع جديد
+            // معالج النقر على الخريطة
             map.on('click', function(e) {
+                console.log('تم النقر على الخريطة:', e.latlng);
+                
                 if (isAddingLocation) {
                     addTempMarker(e.latlng);
                 }
@@ -213,10 +243,20 @@
         }
 
         function addTempMarker(latlng) {
+            console.log('إضافة علامة مؤقتة:', latlng);
+            
+            // إزالة العلامة القديمة
             if (tempMarker) {
                 map.removeLayer(tempMarker);
             }
+            
+            // إزالة رسالة التعليمات
+            const instruction = document.getElementById('map-instruction');
+            if (instruction) {
+                document.body.removeChild(instruction);
+            }
 
+            // إضافة علامة جديدة
             tempMarker = L.marker(latlng, {
                 icon: L.icon({
                     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
@@ -228,8 +268,15 @@
                 })
             }).addTo(map);
 
+            // تعبئة الإحداثيات
             document.getElementById('new-location-lat').value = latlng.lat.toFixed(6);
             document.getElementById('new-location-lng').value = latlng.lng.toFixed(6);
+            
+            // فتح النافذة
+            document.getElementById('add-location-modal').classList.remove('hidden');
+            
+            // إعادة المؤشر للحالة العادية
+            map.getContainer().style.cursor = '';
         }
 
         function showLocationInfo(location) {
@@ -290,29 +337,67 @@
         document.getElementById('status-filter').addEventListener('change', filterLocations);
 
         document.getElementById('add-location-btn').addEventListener('click', function() {
+            console.log('تم الضغط على زر إضافة موقع');
+            
             isAddingLocation = true;
-            document.getElementById('add-location-modal').classList.remove('hidden');
             map.getContainer().style.cursor = 'crosshair';
+            
+            // مسح الحقول
+            document.getElementById('new-location-name').value = '';
+            document.getElementById('new-location-project').value = '';
+            document.getElementById('new-location-address').value = '';
+            document.getElementById('new-location-lat').value = '';
+            document.getElementById('new-location-lng').value = '';
+            
+            // إظهار رسالة توضيحية
+            const instruction = document.createElement('div');
+            instruction.id = 'map-instruction';
+            instruction.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #4CAF50; color: white; padding: 15px 25px; border-radius: 8px; z-index: 10000; font-size: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);';
+            instruction.textContent = 'انقر على الخريطة لتحديد الموقع';
+            document.body.appendChild(instruction);
+            
+            // إخفاء الرسالة بعد 3 ثوان
+            setTimeout(() => {
+                if (document.getElementById('map-instruction')) {
+                    document.body.removeChild(instruction);
+                }
+            }, 3000);
         });
 
         document.getElementById('cancel-add-location').addEventListener('click', function() {
+            console.log('تم إلغاء إضافة الموقع');
+            
             isAddingLocation = false;
             document.getElementById('add-location-modal').classList.add('hidden');
             map.getContainer().style.cursor = '';
+            
             if (tempMarker) {
                 map.removeLayer(tempMarker);
                 tempMarker = null;
+            }
+            
+            // إزالة رسالة التعليمات إن وجدت
+            const instruction = document.getElementById('map-instruction');
+            if (instruction) {
+                document.body.removeChild(instruction);
             }
         });
 
         document.getElementById('current-location-btn').addEventListener('click', function() {
             if (navigator.geolocation) {
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-4 h-4 ml-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>جاري تحديد الموقع...';
+                btn.disabled = true;
+                
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    map.setView([lat, lng], 15);
+                    const accuracy = position.coords.accuracy;
                     
-                    L.marker([lat, lng], {
+                    map.setView([lat, lng], 18);
+                    
+                    const marker = L.marker([lat, lng], {
                         icon: L.icon({
                             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
                             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -321,8 +406,78 @@
                             popupAnchor: [1, -34],
                             shadowSize: [41, 41]
                         })
-                    }).addTo(map).bindPopup('موقعك الحالي').openPopup();
+                    }).addTo(map);
+                    
+                    // إضافة دائرة توضح دقة الموقع
+                    L.circle([lat, lng], {
+                        radius: accuracy,
+                        color: '#0066ff',
+                        fillColor: '#0066ff',
+                        fillOpacity: 0.1,
+                        weight: 2
+                    }).addTo(map);
+                    
+                    marker.bindPopup(`موقعك الحالي<br>دقة: ${Math.round(accuracy)} متر`).openPopup();
+                    
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, function(error) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    alert('لا يمكن الحصول على موقعك. تأكد من السماح بالوصول للموقع.');
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 30000,
+                    maximumAge: 0
                 });
+            }
+        });
+
+        document.getElementById('save-current-location-btn').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    document.getElementById('new-location-lat').value = lat.toFixed(6);
+                    document.getElementById('new-location-lng').value = lng.toFixed(6);
+                    document.getElementById('add-location-modal').classList.remove('hidden');
+                    
+                    if (tempMarker) {
+                        map.removeLayer(tempMarker);
+                    }
+                    
+                    tempMarker = L.marker([lat, lng], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        })
+                    }).addTo(map);
+                    
+                    map.setView([lat, lng], 15);
+                    
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.display_name) {
+                                document.getElementById('new-location-address').value = data.display_name;
+                            }
+                        })
+                        .catch(error => console.log('لا يمكن الحصول على العنوان:', error));
+                        
+                }, function(error) {
+                    alert('لا يمكن الحصول على موقعك. تأكد من السماح بالوصول للموقع.');
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                });
+            } else {
+                alert('المتصفح لا يدعم خدمة تحديد الموقع.');
             }
         });
 
@@ -333,12 +488,24 @@
         document.getElementById('add-location-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // التحقق من الحقول المطلوبة
+            const name = document.getElementById('new-location-name').value;
+            const projectId = document.getElementById('new-location-project').value;
+            const lat = document.getElementById('new-location-lat').value;
+            const lng = document.getElementById('new-location-lng').value;
+            
+            if (!name || !projectId || !lat || !lng) {
+                alert('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+            
             const formData = {
-                name: document.getElementById('new-location-name').value,
-                project_id: document.getElementById('new-location-project').value,
+                name: name,
+                project_id: projectId,
                 address: document.getElementById('new-location-address').value,
-                latitude: document.getElementById('new-location-lat').value,
-                longitude: document.getElementById('new-location-lng').value
+                latitude: lat,
+                longitude: lng,
+                budget_allocated: 0
             };
 
             try {
@@ -354,7 +521,23 @@
                 if (response.ok) {
                     const newLocation = await response.json();
                     locations.push(newLocation);
-                    addLocationMarker(newLocation);
+                    
+                    // إضافة الموقع للخريطة
+                    const locationData = {
+                        id: newLocation.id,
+                        name: newLocation.name,
+                        latitude: parseFloat(newLocation.latitude),
+                        longitude: parseFloat(newLocation.longitude),
+                        address: newLocation.address,
+                        status: 'active',
+                        project_id: newLocation.project_id,
+                        project: newLocation.project,
+                        budget: 0,
+                        spent_amount: 0,
+                        expenses_count: 0
+                    };
+                    
+                    addLocationMarker(locationData);
                     
                     // إغلاق النافذة وإعادة تعيين النموذج
                     document.getElementById('add-location-modal').classList.add('hidden');
@@ -369,13 +552,15 @@
                     
                     alert('تم إضافة الموقع بنجاح');
                 } else {
-                    alert('حدث خطأ في إضافة الموقع');
+                    const errorData = await response.json();
+                    alert('حدث خطأ في إضافة الموقع: ' + (errorData.message || 'خطأ غير معروف'));
                 }
             } catch (error) {
                 console.error('خطأ:', error);
                 alert('حدث خطأ في الاتصال');
             }
         });
+
 
         // تهيئة الخريطة عند تحميل الصفحة
         document.addEventListener('DOMContentLoaded', initMap);

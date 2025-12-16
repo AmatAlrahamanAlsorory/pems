@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Person extends Model
 {
-    protected $fillable = ['name', 'type', 'phone', 'id_number', 'is_active'];
+    protected $fillable = ['name', 'type', 'position', 'phone', 'email', 'notes', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
 
@@ -20,8 +20,10 @@ class Person extends Model
     {
         return match($this->type) {
             'actor' => 'ممثل',
-            'technician' => 'فني',
-            'crew' => 'طاقم',
+            'director' => 'مخرج',
+            'producer' => 'منتج',
+            'crew' => 'طاقم فني',
+            'other' => 'أخرى',
             default => 'غير محدد'
         };
     }

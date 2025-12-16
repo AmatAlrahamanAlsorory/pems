@@ -22,9 +22,11 @@ class PersonController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:actor,technician,crew',
+            'type' => 'required|in:actor,director,producer,crew,other',
+            'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'id_number' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'notes' => 'nullable|string',
         ]);
 
         Person::create($validated);
@@ -46,13 +48,25 @@ class PersonController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:actor,technician,crew',
+            'type' => 'required|in:actor,director,producer,crew,other',
+            'position' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'id_number' => 'nullable|string|max:20',
-            'is_active' => 'boolean',
+            'email' => 'nullable|email|max:255',
+            'notes' => 'nullable|string',
         ]);
 
         $person->update($validated);
-        return redirect()->route('people.index')->with('success', 'تم تحديث بيانات الشخص بنجاح');
+        return redirect()->route('people.show', $person)->with('success', 'تم تحديث بيانات الشخص بنجاح');
+    }
+
+    public function destroy(Person $person)
+    {
+        // فحص إذا كان الشخص مرتبط بمصروفات
+        if ($person->expenses()->count() > 0) {
+            return back()->withErrors(['delete' => 'لا يمكن حذف هذا الشخص لأنه مرتبط بمصروفات']);
+        }
+
+        $person->delete();
+        return redirect()->route('people.index')->with('success', 'تم حذف الشخص بنجاح');
     }
 }

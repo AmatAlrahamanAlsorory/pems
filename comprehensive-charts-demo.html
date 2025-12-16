@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المخططات المحسنة الشاملة - نظام إدارة مصروفات الإنتاج الفني</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <!-- Modern Charts CSS -->
+    <link rel="stylesheet" href="public/css/modern-charts.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .main-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 4rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .main-header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .main-header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .chart-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .chart-section.primary::before {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a52);
+        }
+
+        .chart-section.secondary::before {
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+        }
+
+        .chart-section.accent::before {
+            background: linear-gradient(90deg, #45b7d1, #2196f3);
+        }
+
+        .chart-section.success::before {
+            background: linear-gradient(90deg, #96ceb4, #feca57);
+        }
+
+        .chart-section:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 
+                0 35px 60px -12px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.3);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2d3748;
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: #718096;
+            margin-bottom: 2rem;
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .overview-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .overview-card:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .overview-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .overview-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        .export-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .main-header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .chart-section {
+                padding: 2rem;
+            }
+            
+            .chart-canvas {
+                height: 400px;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-header">
+        <h1>
+            <i class="fas fa-chart-line"></i>
+            نظام إدارة مصروفات الإنتاج الفني
+        </h1>
+        <p>لوحة تحكم شاملة للمخططات والتحليلات المالية</p>
+        
+        <!-- إحصائيات عامة -->
+        <div class="stats-overview">
+            <div class="overview-card" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">
+                <div class="overview-value">2.28M ر.س</div>
+                <div class="overview-label">إجمالي المصروفات</div>
+            </div>
+            <div class="overview-card" style="background: linear-gradient(135deg, #4ecdc4, #44a08d);">
+                <div class="overview-value">15</div>
+                <div class="overview-label">المشاريع النشطة</div>
+            </div>
+            <div class="overview-card" style="background: linear-gradient(135deg, #45b7d1, #2196f3);">
+                <div class="overview-value">92%</div>
+                <div class="overview-label">معدل استخدام الميزانية</div>
+            </div>
+            <div class="overview-card" style="background: linear-gradient(135deg, #96ceb4, #feca57);">
+                <div class="overview-value">8</div>
+                <div class="overview-label">فئات المصروفات</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <!-- مخطط المصروفات حسب الفئات -->
+        <div class="chart-section primary">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-bar" style="color: #ff6b6b;"></i>
+                    المصروفات حسب الفئات
+                </h2>
+                <p class="section-subtitle">
+                    توزيع المصروفات على الفئات المختلفة مع عرض تفاعلي محسن
+                </p>
+            </div>
+            <div class="chart-canvas">
+                <canvas id="modernCategoryChart"></canvas>
+            </div>
+            <div id="categoryLegend" class="modern-legend-container"></div>
+            <div class="export-controls">
+                <button class="export-btn" onclick="exportChart('categoryChart')">
+                    <i class="fas fa-download"></i> تصدير المخطط
+                </button>
+            </div>
+        </div>
+
+        <!-- مخطط حالة الميزانيات -->
+        <div class="chart-section secondary">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-pie" style="color: #4ecdc4;"></i>
+                    حالة ميزانيات المشاريع
+                </h2>
+                <p class="section-subtitle">
+                    عرض دائري لحالة استخدام الميزانيات في المشاريع المختلفة
+                </p>
+            </div>
+            <div class="chart-canvas">
+                <canvas id="enhancedBudgetChart"></canvas>
+            </div>
+            <div class="export-controls">
+                <button class="export-btn" onclick="exportChart('budgetChart')">
+                    <i class="fas fa-download"></i> تصدير المخطط
+                </button>
+            </div>
+        </div>
+
+        <!-- مخطط الاتجاهات الزمنية -->
+        <div class="chart-section accent">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line" style="color: #45b7d1;"></i>
+                    تحليل الاتجاهات الزمنية
+                </h2>
+                <p class="section-subtitle">
+                    مقارنة المصروفات الفعلية مع الميزانية المخططة عبر الوقت
+                </p>
+            </div>
+            <div class="chart-canvas">
+                <canvas id="trendAnalysisChart"></canvas>
+            </div>
+            <div class="export-controls">
+                <button class="export-btn" onclick="exportChart('trendChart')">
+                    <i class="fas fa-download"></i> تصدير المخطط
+                </button>
+            </div>
+        </div>
+
+        <!-- مخطط مقارنة المشاريع -->
+        <div class="chart-section success">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-column" style="color: #96ceb4;"></i>
+                    مقارنة أداء المشاريع
+                </h2>
+                <p class="section-subtitle">
+                    مقارنة الميزانية المخططة مع المصروف الفعلي للمشاريع المختلفة
+                </p>
+            </div>
+            <div class="chart-canvas">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+            <div class="export-controls">
+                <button class="export-btn" onclick="exportChart('comparisonChart')">
+                    <i class="fas fa-download"></i> تصدير المخطط
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern Charts JavaScript -->
+    <script src="public/js/modern-charts.js"></script>
+    
+    <script>
+        // دالة تصدير المخططات
+        function exportChart(chartName) {
+            if (window.modernCharts) {
+                window.modernCharts.exportChart(chartName);
+            }
+        }
+
+        // إضافة تأثيرات الحركة المتقدمة
+        document.addEventListener('DOMContentLoaded', () => {
+            // تأثير الظهور التدريجي للعناصر
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, index * 200);
+                    }
+                });
+            }, observerOptions);
+
+            // تطبيق التأثير على جميع أقسام المخططات
+            document.querySelectorAll('.chart-section').forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(50px)';
+                section.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                observer.observe(section);
+            });
+
+            // تأثير النبض للإحصائيات
+            setInterval(() => {
+                document.querySelectorAll('.overview-card').forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.transform = 'translateY(-5px) scale(1.05)';
+                        setTimeout(() => {
+                            card.style.transform = 'translateY(0) scale(1)';
+                        }, 300);
+                    }, index * 100);
+                });
+            }, 15000);
+
+            // إضافة تأثيرات الماوس المتقدمة
+            document.querySelectorAll('.chart-section').forEach(section => {
+                section.addEventListener('mouseenter', () => {
+                    section.style.transform = 'translateY(-12px) scale(1.02)';
+                });
+                
+                section.addEventListener('mouseleave', () => {
+                    section.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+
+        // إضافة إشعارات النجاح عند التصدير
+        function showExportSuccess(chartName) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+                z-index: 1000;
+                font-family: 'Cairo', sans-serif;
+                font-weight: 600;
+                animation: slideInRight 0.5s ease-out;
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                تم تصدير المخطط بنجاح!
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+        }
+
+        // إضافة الأنيميشن CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

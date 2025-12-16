@@ -146,6 +146,36 @@ class CustodyController extends Controller
         return back()->with('success', 'تم تصفية العهدة بنجاح');
     }
     
+    public function edit(Custody $custody)
+    {
+        $projects = Project::all();
+        return view('custodies.edit', compact('custody', 'projects'));
+    }
+    
+    public function update(Request $request, Custody $custody)
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'amount' => 'required|numeric|min:1000',
+            'currency' => 'required|in:YER,SAR,USD',
+            'purpose' => 'required|string|min:10',
+            'notes' => 'nullable|string',
+        ]);
+        
+        $custody->update($validated);
+        
+        return redirect()->route('custodies.index')
+            ->with('success', 'تم تحديث العهدة بنجاح');
+    }
+    
+    public function destroy(Custody $custody)
+    {
+        $custody->delete();
+        
+        return redirect()->route('custodies.index')
+            ->with('success', 'تم حذف العهدة بنجاح');
+    }
+    
     public function stats()
     {
         $custodyRules = app(\App\Services\CustodyRulesService::class);

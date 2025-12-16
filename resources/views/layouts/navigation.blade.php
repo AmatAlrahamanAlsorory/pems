@@ -66,6 +66,22 @@
                         <span>التقارير</span>
                     </a>
                     @endpermission
+                    @permission('view_reports')
+                    <a href="{{ route('analytics.index') }}" class="nav-link {{ request()->routeIs('analytics.*') ? 'active' : '' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        <span>التحليلات التنبؤية</span>
+                    </a>
+                    @endpermission
+                    @permission('manage_locations')
+                    <a href="{{ route('locations.index') }}" class="nav-link {{ request()->routeIs('locations.*') ? 'active' : '' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        </svg>
+                        <span>المواقع</span>
+                    </a>
+                    @endpermission
                     @permission('manage_people')
                         <a href="{{ route('people.index') }}" class="nav-link {{ request()->routeIs('people.*') ? 'active' : '' }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +99,7 @@
                             $unreadCount = \App\Models\Notification::where('user_id', auth()->id())->where('is_read', false)->count();
                         @endphp
                         @if($unreadCount > 0)
-                            <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                            <span class="notification-badge absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse">
                                 {{ $unreadCount }}
                             </span>
                         @endif
@@ -185,6 +201,16 @@
             @permission('view_reports')
             <a href="{{ route('reports.index') }}" class="block px-4 py-3 text-white font-semibold {{ request()->routeIs('reports.*') ? 'bg-blue-900' : 'hover:bg-blue-700' }}">
                 📈 التقارير
+            </a>
+            @endpermission
+            @permission('view_reports')
+            <a href="{{ route('analytics.index') }}" class="block px-4 py-3 text-white font-semibold {{ request()->routeIs('analytics.*') ? 'bg-blue-900' : 'hover:bg-blue-700' }}">
+                🔮 التحليلات التنبؤية
+            </a>
+            @endpermission
+            @permission('manage_locations')
+            <a href="{{ route('locations.index') }}" class="block px-4 py-3 text-white font-semibold {{ request()->routeIs('locations.*') ? 'bg-blue-900' : 'hover:bg-blue-700' }}">
+                📍 المواقع
             </a>
             @endpermission
             <a href="{{ route('notifications.index') }}" class="block px-4 py-3 text-white font-semibold {{ request()->routeIs('notifications.*') ? 'bg-blue-900' : 'hover:bg-blue-700' }}">

@@ -25,8 +25,8 @@
                 <div class="bg-gradient-to-l from-blue-600 to-blue-700 p-6 text-white">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h3 class="text-2xl font-bold">{{ $expense->category->name }}</h3>
-                            <p class="text-blue-100 mt-1">{{ $expense->item->name }}</p>
+                            <h3 class="text-2xl font-bold">{{ $expense->category->name_ar ?? $expense->category->name ?? 'غير محدد' }}</h3>
+                            <p class="text-blue-100 mt-1">{{ $expense->item->name_ar ?? $expense->item->name ?? 'غير محدد' }}</p>
                         </div>
                         <div class="text-left">
                             <p class="text-3xl font-bold">{{ number_format($expense->amount) }}</p>
@@ -43,7 +43,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 mb-1">تاريخ المصروف</p>
-                            <p class="text-lg font-semibold text-gray-900">{{ $expense->expense_date->format('Y/m/d') }}</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ $expense->expense_date ? \Carbon\Carbon::parse($expense->expense_date)->format('Y/m/d') : 'غير محدد' }}</p>
                         </div>
                         @if($expense->custody)
                         <div>
@@ -59,7 +59,7 @@
                         @endif
                         <div>
                             <p class="text-sm text-gray-600 mb-1">المسجل بواسطة</p>
-                            <p class="text-lg font-semibold text-gray-900">{{ $expense->user->name }}</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ $expense->user->name ?? 'غير محدد' }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600 mb-1">الحالة</p>

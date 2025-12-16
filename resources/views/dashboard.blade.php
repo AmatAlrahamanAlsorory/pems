@@ -59,7 +59,7 @@
             @endpermission
             
             <!-- إحصائيات سريعة -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                 <!-- إجمالي المشاريع -->
                 <div class="stat-card border-blue-500 hover:border-blue-600 group">
                     <div class="flex items-center justify-between">
@@ -153,10 +153,10 @@
                         الإجراءات السريعة
                     </h3>
                 </div>
-                <div class="p-8">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
                         @permission('create_project')
-                        <a href="{{ route('projects.create') }}" class="group flex flex-col items-center p-8 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-2xl transition-all duration-300 border-2 border-transparent hover:border-blue-300 hover:shadow-xl hover:-translate-y-2">
+                        <a href="{{ route('projects.create') }}" class="group flex flex-col items-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl sm:rounded-2xl transition-all duration-300 border-2 border-transparent hover:border-blue-300 hover:shadow-xl hover:-translate-y-1 sm:hover:-translate-y-2 touch-target">
                             <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -209,9 +209,9 @@
                             <span class="text-sm font-bold text-gray-900 group-hover:text-indigo-700 transition-colors">إدارة المستخدمين</span>
                         </a>
                         @endpermission
-                        
-                        @if($stats['projects_count'] > 0)
-                        <a href="{{ route('analytics.predictive', ['project' => \App\Models\Project::first()->id]) }}" class="group flex flex-col items-center p-8 bg-gradient-to-br from-pink-50 to-pink-100 hover:from-pink-100 hover:to-pink-200 rounded-2xl transition-all duration-300 border-2 border-transparent hover:border-pink-300 hover:shadow-xl hover:-translate-y-2">
+
+                        @permission('view_reports')
+                        <a href="{{ route('analytics.index') }}" class="group flex flex-col items-center p-8 bg-gradient-to-br from-pink-50 to-pink-100 hover:from-pink-100 hover:to-pink-200 rounded-2xl transition-all duration-300 border-2 border-transparent hover:border-pink-300 hover:shadow-xl hover:-translate-y-2">
                             <div class="bg-gradient-to-br from-pink-500 to-pink-600 p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
@@ -219,8 +219,10 @@
                             </div>
                             <span class="text-sm font-bold text-gray-900 group-hover:text-pink-700 transition-colors">التحليلات التنبؤية</span>
                         </a>
-                        @endif
+                        @endpermission
                         
+
+                        @permission('manage_locations')
                         <a href="{{ route('locations.map') }}" class="group flex flex-col items-center p-8 bg-gradient-to-br from-teal-50 to-teal-100 hover:from-teal-100 hover:to-teal-200 rounded-2xl transition-all duration-300 border-2 border-transparent hover:border-teal-300 hover:shadow-xl hover:-translate-y-2">
                             <div class="bg-gradient-to-br from-teal-500 to-teal-600 p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,31 +232,32 @@
                             </div>
                             <span class="text-sm font-bold text-gray-900 group-hover:text-teal-700 transition-colors">خريطة المواقع</span>
                         </a>
+                        @endpermission
                     </div>
                 </div>
             </div>
 
             <!-- الرسوم البيانية -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-8">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 chart-container">
                     <canvas id="budgetChart" width="400" height="300"></canvas>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 chart-container">
                     <canvas id="categoryChart" width="400" height="300"></canvas>
                 </div>
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 chart-container md:col-span-2 lg:col-span-1">
                     <canvas id="monthlyChart" width="400" height="300"></canvas>
                 </div>
             </div>
             
             <!-- المشاريع الحرجة والتنبيهات والموافقات -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
                 <!-- المشاريع الحرجة -->
                 <div class="bg-white overflow-hidden shadow-lg rounded-xl">
-                    <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-orange-600 to-orange-700">
-                        <h3 class="text-lg font-bold text-white">المشاريع الحرجة</h3>
+                    <div class="p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-orange-600 to-orange-700">
+                        <h3 class="text-base sm:text-lg font-bold text-white">المشاريع الحرجة</h3>
                     </div>
-                    <div class="p-6">
+                    <div class="p-4 sm:p-6 max-h-60 sm:max-h-80 overflow-y-auto">
                         @if($criticalProjects->count() > 0)
                             <div class="space-y-3">
                                 @foreach($criticalProjects as $project)
@@ -282,10 +285,10 @@
 
                 <!-- التنبيهات -->
                 <div class="bg-white overflow-hidden shadow-lg rounded-xl">
-                    <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-red-600 to-red-700">
-                        <h3 class="text-lg font-bold text-white">التنبيهات والإشعارات</h3>
+                    <div class="p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-600 to-red-700">
+                        <h3 class="text-base sm:text-lg font-bold text-white">التنبيهات والإشعارات</h3>
                     </div>
-                    <div class="p-6">
+                    <div class="p-4 sm:p-6 max-h-60 sm:max-h-80 overflow-y-auto">
                         @if($notifications->count() > 0)
                             <div class="space-y-3">
                                 @foreach($notifications as $notification)
@@ -315,11 +318,11 @@
 
                 <!-- الموافقات المطلوبة -->
                 @if(\App\Helpers\PermissionHelper::canViewReports(auth()->user()))
-                <div class="bg-white overflow-hidden shadow-lg rounded-xl">
-                    <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-yellow-600 to-yellow-700">
-                        <h3 class="text-lg font-bold text-white">الموافقات المطلوبة</h3>
+                <div class="bg-white overflow-hidden shadow-lg rounded-xl md:col-span-2 lg:col-span-1">
+                    <div class="p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-yellow-600 to-yellow-700">
+                        <h3 class="text-base sm:text-lg font-bold text-white">الموافقات المطلوبة</h3>
                     </div>
-                    <div class="p-6">
+                    <div class="p-4 sm:p-6 max-h-60 sm:max-h-80 overflow-y-auto">
                         @if($pendingApprovals->count() > 0)
                             <div class="space-y-3">
                                 @foreach($pendingApprovals as $approval)
@@ -327,25 +330,18 @@
                                         <div>
                                             <h4 class="font-medium text-gray-900">
                                                 @if($approval->approvable_type === 'App\\Models\\Expense')
-                                                    مصروف - {{ $approval->approvable->category->name }}
+                                                    مصروف - {{ $approval->approvable?->expenseCategory?->name ?? 'غير محدد' }}
                                                 @else
-                                                    عهدة - {{ $approval->approvable->project->name }}
+                                                    عهدة - {{ $approval->approvable?->project?->name ?? 'غير محدد' }}
                                                 @endif
                                             </h4>
-                                            <p class="text-sm text-gray-600">{{ number_format($approval->approvable->amount) }} ر.س</p>
+                                            <p class="text-sm text-gray-600">{{ number_format($approval->approvable?->amount ?? 0) }} ر.س</p>
                                         </div>
                                         <a href="{{ route('approvals.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                             مراجعة
                                         </a>
                                     </div>
                                 @endforeach
-                                @if($pendingApprovals->count() >= 3)
-                                    <div class="text-center pt-2">
-                                        <a href="{{ route('approvals.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                            عرض جميع الموافقات
-                                        </a>
-                                    </div>
-                                @endif
                             </div>
                         @else
                             <div class="text-center py-12">
@@ -363,6 +359,180 @@
         </div>
     </div>
     
-    <script src="{{ asset('js/dashboard-charts.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartData = @json($chartData);
+            
+            // رسم بياني لحالة المشاريع
+            const budgetCtx = document.getElementById('budgetChart');
+            if (budgetCtx && chartData.project_status) {
+                const normal = parseInt(chartData.project_status.normal) || 0;
+                const warning = parseInt(chartData.project_status.warning) || 0;
+                const critical = parseInt(chartData.project_status.critical) || 0;
+                const total = normal + warning + critical;
+                
+                if (total > 0) {
+                    new Chart(budgetCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: [`آمن (${normal})`, `تحذير (${warning})`, `خطر (${critical})`],
+                            datasets: [{
+                                data: [normal, warning, critical],
+                                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                                borderWidth: 3,
+                                borderColor: '#ffffff',
+                                hoverBorderWidth: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { 
+                                        padding: 15, 
+                                        usePointStyle: true,
+                                        font: { size: 12 }
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'حالة ميزانيات المشاريع',
+                                    font: { size: 14, weight: 'bold' }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                            return context.label + ': ' + percentage + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    budgetCtx.getContext('2d').font = '16px Arial';
+                    budgetCtx.getContext('2d').textAlign = 'center';
+                    budgetCtx.getContext('2d').fillText('لا توجد مشاريع', budgetCtx.width/2, budgetCtx.height/2);
+                }
+            }
+            
+            // رسم بياني للمصروفات حسب الفئات
+            const categoryCtx = document.getElementById('categoryChart');
+            if (categoryCtx && chartData.category_spending && chartData.category_spending.length > 0) {
+                const sortedData = chartData.category_spending.slice(0, 5);
+                new Chart(categoryCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedData.map(item => item.name || 'غير محدد'),
+                        datasets: [{
+                            label: 'المبلغ المصروف (ر.س)',
+                            data: sortedData.map(item => parseFloat(item.amount) || 0),
+                            backgroundColor: [
+                                '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'
+                            ],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: 'المصروفات حسب الفئات',
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('ar-SA').format(value) + ' ر.س';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // عرض رسالة عند عدم وجود بيانات
+                categoryCtx.getContext('2d').font = '16px Arial';
+                categoryCtx.getContext('2d').textAlign = 'center';
+                categoryCtx.getContext('2d').fillText('لا توجد بيانات للعرض', categoryCtx.width/2, categoryCtx.height/2);
+            }
+            
+            // رسم بياني للمصروفات الشهرية
+            const monthlyCtx = document.getElementById('monthlyChart');
+            if (monthlyCtx && chartData.monthly_expenses) {
+                const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                               'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+                
+                // تحويل بيانات الشهور إلى مصفوفة
+                const monthlyData = [];
+                for (let i = 1; i <= 12; i++) {
+                    const monthKey = i.toString().padStart(2, '0');
+                    monthlyData.push(parseFloat(chartData.monthly_expenses[monthKey]) || 0);
+                }
+                
+                const hasData = monthlyData.some(value => value > 0);
+                
+                if (hasData) {
+                    new Chart(monthlyCtx, {
+                        type: 'line',
+                        data: {
+                            labels: months,
+                            datasets: [{
+                                label: 'المصروفات الشهرية (ر.س)',
+                                data: monthlyData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#3b82f6',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'اتجاه المصروفات الشهرية',
+                                    font: { size: 14, weight: 'bold' }
+                                },
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return new Intl.NumberFormat('ar-SA').format(value) + ' ر.س';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    monthlyCtx.getContext('2d').font = '16px Arial';
+                    monthlyCtx.getContext('2d').textAlign = 'center';
+                    monthlyCtx.getContext('2d').fillText('لا توجد بيانات شهرية', monthlyCtx.width/2, monthlyCtx.height/2);
+                }
+            }
+        });
+    </script>
     @vite(['resources/js/notifications.js'])
 </x-app-layout>

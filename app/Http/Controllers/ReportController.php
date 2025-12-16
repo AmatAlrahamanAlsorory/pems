@@ -7,6 +7,7 @@ use App\Models\ExpenseCategory;
 use App\Models\Location;
 use App\Models\Expense;
 use App\Services\ReportExportService;
+use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -16,11 +17,19 @@ class ReportController extends Controller
 {
     public function index()
     {
+        if (!PermissionHelper::canViewReports(auth()->user())) {
+            abort(403, 'غير مصرح لك بعرض التقارير');
+        }
+        
         return view('reports.index');
     }
 
     public function projectReport(Request $request)
     {
+        if (!PermissionHelper::canViewReports(auth()->user())) {
+            abort(403, 'غير مصرح لك بعرض التقارير');
+        }
+        
         $projects = Project::select(['id', 'name', 'type', 'total_budget', 'spent_amount', 'status'])
             ->when($request->project_id, fn($q) => $q->where('id', $request->project_id))
             ->get()
@@ -53,6 +62,10 @@ class ReportController extends Controller
 
     public function categoryReport(Request $request)
     {
+        if (!PermissionHelper::canViewReports(auth()->user())) {
+            abort(403, 'غير مصرح لك بعرض التقارير');
+        }
+        
         $categories = ExpenseCategory::with(['expenses' => function($q) use ($request) {
             $q->where('status', 'approved');
             if ($request->project_id) $q->where('project_id', $request->project_id);
@@ -116,8 +129,8 @@ class ReportController extends Controller
     {
         $data = [
             'monthly_expenses' => Expense::where('status', 'approved')
-                ->selectRaw('MONTH(expense_date) as month, SUM(amount) as total')
-                ->whereYear('expense_date', date('Y'))
+                ->selectRaw('strftime(\'%m\', expense_date) as month, SUM(amount) as total')
+                ->whereRaw('strftime(\'%Y\', expense_date) = ?', [date('Y')])
                 ->groupBy('month')
                 ->pluck('total', 'month'),
             
@@ -144,6 +157,10 @@ class ReportController extends Controller
     
     public function exportProject(Request $request)
     {
+        if (!PermissionHelper::canExportReports(auth()->user())) {
+            abort(403, 'غير مصرح لك بتصدير التقارير');
+        }
+        
         $exportService = app(ReportExportService::class);
         
         if ($request->project_id) {
@@ -200,6 +217,10 @@ class ReportController extends Controller
     
     public function exceptionsReport(Request $request)
     {
+        if (!PermissionHelper::canViewExceptions(auth()->user())) {
+            abort(403, 'غير مصرح لك بعرض الاستثناءات');
+        }
+        
         $exceptions = collect();
         
         // المصروفات بدون فواتير
@@ -226,7 +247,7 @@ class ReportController extends Controller
             ]);
         
         // المصروفات المتأخرة في الإدخال
-        $lateEntry = Expense::whereRaw('DATEDIFF(created_at, expense_date) > 7')
+        $lateEntry = Expense::whereRaw('julianday(created_at) - julianday(expense_date) > 7')
             ->with(['project', 'category', 'item', 'user'])
             ->get()
             ->map(fn($expense) => [

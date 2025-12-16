@@ -76,12 +76,32 @@
                                     </td>
                                     <td>{{ $custody->created_at->format('Y-m-d') }}</td>
                                     <td>
-                                        <div class="flex gap-2">
-                                            <a href="{{ route('custodies.show', $custody) }}" class="text-blue-600 hover:text-blue-800 text-sm">عرض</a>
+                                        <div class="flex gap-1">
+                                            <a href="{{ route('custodies.show', $custody) }}" class="text-blue-700 hover:text-blue-900 text-xs font-bold border border-blue-300 hover:border-blue-500 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100">
+                                                عرض
+                                            </a>
+                                            
+                                            @if(\App\Helpers\PermissionHelper::canEditCustody(auth()->user()))
+                                                <a href="{{ route('custodies.edit', $custody) }}" class="text-yellow-700 hover:text-yellow-900 text-xs font-bold border border-yellow-300 hover:border-yellow-500 px-2 py-1 rounded bg-yellow-50 hover:bg-yellow-100">
+                                                    تعديل
+                                                </a>
+                                            @endif
+                                            
+                                            @if(\App\Helpers\PermissionHelper::canDeleteCustody(auth()->user()))
+                                                <form method="POST" action="{{ route('custodies.destroy', $custody) }}" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-700 hover:text-red-900 text-xs font-bold border border-red-300 hover:border-red-500 px-2 py-1 rounded bg-red-50 hover:bg-red-100" 
+                                                            onclick="return confirm('هل تريد حذف هذه العهدة؟')">
+                                                        حذف
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            
                                             @if($custody->status == 'requested' && in_array(auth()->user()->role, ['financial_manager', 'admin_accountant', 'production_manager']))
                                                 <form method="POST" action="{{ route('approvals.approve', 'custody_' . $custody->id) }}" class="inline">
                                                     @csrf
-                                                    <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium" 
+                                                    <button type="submit" class="text-green-700 hover:text-green-900 text-xs font-bold border border-green-300 hover:border-green-500 px-2 py-1 rounded bg-green-50 hover:bg-green-100" 
                                                             onclick="return confirm('هل تريد الموافقة على هذه العهدة؟')">
                                                         ✓ موافقة
                                                     </button>

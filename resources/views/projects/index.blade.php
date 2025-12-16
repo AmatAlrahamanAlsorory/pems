@@ -25,11 +25,11 @@
             @endif
 
             <!-- Projects Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 @forelse($projects as $project)
                     <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition duration-300 overflow-hidden border border-gray-100">
                         <!-- Header -->
-                        <div class="bg-gradient-to-l from-blue-600 to-blue-700 p-6 text-white">
+                        <div class="bg-gradient-to-l from-blue-600 to-blue-700 p-4 sm:p-6 text-white">
                             <div class="flex justify-between items-start mb-3">
                                 <h3 class="text-xl font-bold">{{ $project->name }}</h3>
                                 <span class="px-3 py-1 bg-white/20 rounded-full text-xs">
@@ -53,7 +53,7 @@
                         </div>
 
                         <!-- Body -->
-                        <div class="p-6">
+                        <div class="p-4 sm:p-6">
                             <!-- Stats -->
                             <div class="grid grid-cols-2 gap-4 mb-4">
                                 <div class="text-center p-3 bg-blue-50 rounded-lg">
@@ -106,14 +106,14 @@
                             </div>
 
                             <!-- Actions -->
-                            <div class="flex gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2">
                                 <a href="{{ route('projects.show', $project) }}" 
-                                   class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-lg text-sm font-semibold transition">
+                                   class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2.5 sm:py-2 rounded-lg text-sm font-semibold transition touch-target">
                                     عرض التفاصيل
                                 </a>
                                 @permission('edit_project')
                                 <a href="{{ route('projects.edit', $project) }}" 
-                                   class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold transition">
+                                   class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 sm:py-2 rounded-lg text-sm font-semibold transition touch-target">
                                     تعديل
                                 </a>
                                 @endpermission

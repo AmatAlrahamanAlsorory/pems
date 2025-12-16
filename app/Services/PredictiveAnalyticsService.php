@@ -86,7 +86,7 @@ class PredictiveAnalyticsService
     {
         $expenses = Expense::where('project_id', $projectId)
             ->where('status', 'approved')
-            ->selectRaw('MONTH(expense_date) as month, WEEK(expense_date) as week, SUM(amount) as total')
+            ->selectRaw('strftime(\'%m\', expense_date) as month, strftime(\'%W\', expense_date) as week, SUM(amount) as total')
             ->groupBy('month', 'week')
             ->get();
         
@@ -185,7 +185,7 @@ class PredictiveAnalyticsService
     {
         return Expense::where('project_id', $projectId)
             ->where('status', 'approved')
-            ->selectRaw('WEEK(expense_date) as week, YEAR(expense_date) as year, SUM(amount) as total')
+            ->selectRaw('strftime(\'%W\', expense_date) as week, strftime(\'%Y\', expense_date) as year, SUM(amount) as total')
             ->groupBy('year', 'week')
             ->orderBy('year')
             ->orderBy('week')

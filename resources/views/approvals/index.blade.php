@@ -17,9 +17,9 @@
                                     <div>
                                         <h3 class="text-lg font-bold text-gray-900">
                                             @if($approval->approvable_type === 'App\\Models\\Expense')
-                                                مصروف - {{ $approval->approvable->category->name }}
+                                                مصروف - {{ $approval->approvable?->category?->name ?? 'غير محدد' }}
                                             @elseif($approval->approvable_type === 'App\\Models\\Custody')
-                                                عهدة - {{ $approval->approvable->project->name }}
+                                                عهدة - {{ $approval->approvable?->project?->name ?? 'غير محدد' }}
                                             @endif
                                         </h3>
                                         <p class="text-gray-600">طلب من: {{ $approval->user->name }}</p>
@@ -46,19 +46,19 @@
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                                         <div>
                                             <span class="text-gray-600">المشروع:</span>
-                                            <span class="font-medium">{{ $approval->approvable->project->name }}</span>
+                                            <span class="font-medium">{{ $approval->approvable?->project?->name ?? 'غير محدد' }}</span>
                                         </div>
                                         <div>
                                             <span class="text-gray-600">البند:</span>
-                                            <span class="font-medium">{{ $approval->approvable->item->name }}</span>
+                                            <span class="font-medium">{{ $approval->approvable?->item?->name ?? 'غير محدد' }}</span>
                                         </div>
                                         <div>
                                             <span class="text-gray-600">التاريخ:</span>
-                                            <span class="font-medium">{{ $approval->approvable->expense_date->format('Y/m/d') }}</span>
+                                            <span class="font-medium">{{ $approval->approvable?->expense_date?->format('Y/m/d') ?? 'غير محدد' }}</span>
                                         </div>
                                         <div>
                                             <span class="text-gray-600">رقم الفاتورة:</span>
-                                            <span class="font-medium">{{ $approval->approvable->invoice_number ?? 'غير محدد' }}</span>
+                                            <span class="font-medium">{{ $approval->approvable?->invoice_number ?? 'غير محدد' }}</span>
                                         </div>
                                     </div>
                                     
@@ -74,15 +74,15 @@
                                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
                                         <div>
                                             <span class="text-gray-600">الغرض:</span>
-                                            <span class="font-medium">{{ $approval->approvable->purpose }}</span>
+                                            <span class="font-medium">{{ $approval->approvable?->purpose ?? 'غير محدد' }}</span>
                                         </div>
                                         <div>
                                             <span class="text-gray-600">المشروع:</span>
-                                            <span class="font-medium">{{ $approval->approvable->project->name }}</span>
+                                            <span class="font-medium">{{ $approval->approvable?->project?->name ?? 'غير محدد' }}</span>
                                         </div>
                                         <div>
                                             <span class="text-gray-600">رقم العهدة:</span>
-                                            <span class="font-medium">{{ $approval->approvable->custody_number ?? 'C-' . $approval->approvable->id }}</span>
+                                            <span class="font-medium">{{ $approval->approvable?->custody_number ?? ('C-' . ($approval->approvable?->id ?? '0')) }}</span>
                                         </div>
                                     </div>
                                     

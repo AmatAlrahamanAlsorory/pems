@@ -15,7 +15,7 @@ class CheckPermission
         }
 
         if (!PermissionHelper::hasPermission(auth()->user(), $permission)) {
-            abort(403, 'غير مصرح لك بتنفيذ هذا الإجراء');
+            abort(403, 'غير مصرح لك بالوصول لهذه الصفحة');
         }
 
         return $next($request);

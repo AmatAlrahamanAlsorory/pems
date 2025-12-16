@@ -55,16 +55,16 @@ h4 { font-size: 0.75rem; font-weight: 500; color: #374151; }
   @apply bg-gray-50 text-gray-800 p-4 rounded-t-lg border-b border-gray-200;
 }
 
-/* أزرار مهنية */
+/* أزرار مهنية ومتجاوبة */
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-sm transition-colors;
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 sm:py-2 px-4 sm:px-4 rounded-md text-sm sm:text-sm transition-colors touch-target;
 }
 
 .btn-secondary {
-  @apply bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-md border border-gray-300 text-sm transition-colors;
+  @apply bg-white hover:bg-gray-50 text-gray-700 font-medium py-2.5 sm:py-2 px-4 sm:px-4 rounded-md border border-gray-300 text-sm sm:text-sm transition-colors touch-target;
 }
 
-/* جداول مهنية */
+/* جداول مهنية ومتجاوبة */
 .table-modern {
   @apply w-full bg-white rounded-lg shadow-sm border border-gray-200;
 }
@@ -74,11 +74,19 @@ h4 { font-size: 0.75rem; font-weight: 500; color: #374151; }
 }
 
 .table-modern th {
-  @apply px-4 py-3 text-right text-xs font-medium text-gray-700 uppercase;
+  @apply px-2 sm:px-4 py-2 sm:py-3 text-right text-xs font-medium text-gray-700 uppercase;
 }
 
 .table-modern td {
-  @apply px-4 py-3 text-sm text-gray-900 border-b border-gray-100;
+  @apply px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b border-gray-100;
+}
+
+@media (max-width: 640px) {
+  .table-modern th,
+  .table-modern td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
 }
 
 /* إحصائيات مهنية */
@@ -155,4 +163,144 @@ h4 { font-size: 0.75rem; font-weight: 500; color: #374151; }
 /* شادو متوسط للعناصر المرفوعة */
 .medium-shadow {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* شريط التنبيهات المتحرك */
+.ticker-wrapper {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll-left 30s linear infinite;
+}
+
+.ticker-item {
+  display: inline-block;
+  margin-left: 3rem;
+  font-size: 0.875rem;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* تحسين عرض التنبيهات */
+.notification-item {
+  @apply transition-all duration-200 hover:bg-blue-100/50;
+}
+
+.notification-dot {
+  @apply w-2 h-2 bg-blue-500 rounded-full animate-pulse;
+}
+
+/* تحسين الأنيميشن */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+/* تحسينات الجوال والتابلت */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table-responsive table {
+    min-width: 600px;
+  }
+  
+  .mobile-stack {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .mobile-full {
+    width: 100% !important;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.75rem !important;
+  }
+  
+  .mobile-p-2 {
+    padding: 0.5rem !important;
+  }
+}
+
+/* تحسينات التابلت */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .tablet-text-base {
+    font-size: 0.875rem !important;
+  }
+}
+
+/* تحسين الرسوم البيانية للجوال */
+@media (max-width: 640px) {
+  canvas {
+    max-height: 250px !important;
+  }
+  
+  .chart-container {
+    height: 250px !important;
+  }
+}
+
+/* تحسين الأزرار للمس */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* تحسين النصوص للقراءة */
+@media (max-width: 640px) {
+  h1 { font-size: 1.25rem !important; }
+  h2 { font-size: 1.125rem !important; }
+  h3 { font-size: 1rem !important; }
+  
+  .text-responsive {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* تحسين المسافات للجوال */
+@media (max-width: 640px) {
+  .mobile-spacing {
+    padding: 1rem !important;
+    margin: 0.5rem !important;
+  }
+  
+  .mobile-gap {
+    gap: 0.75rem !important;
+  }
 }

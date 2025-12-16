@@ -42,12 +42,47 @@
                                     <td>{{ $expense->description }}</td>
                                     <td>{{ number_format($expense->amount) }} {{ $expense->currency ?? 'YER' }}</td>
                                     <td>
-                                        <span class="badge {{ $expense->status == 'approved' ? 'badge-success' : 'badge-warning' }}">
-                                            {{ $expense->status }}
+                                        @php
+                                            $statusNames = [
+                                                'pending' => 'قيد المراجعة',
+                                                'approved' => 'موافق عليه',
+                                                'rejected' => 'مرفوض',
+                                                'confirmed' => 'مؤكد'
+                                            ];
+                                            $statusColors = [
+                                                'pending' => 'badge-warning',
+                                                'approved' => 'badge-success',
+                                                'rejected' => 'badge-danger',
+                                                'confirmed' => 'badge-info'
+                                            ];
+                                        @endphp
+                                        <span class="badge {{ $statusColors[$expense->status] ?? 'badge-secondary' }}">
+                                            {{ $statusNames[$expense->status] ?? $expense->status }}
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('expenses.show', $expense) }}" class="text-blue-600 hover:text-blue-800 text-sm">عرض</a>
+                                        <div class="flex gap-1">
+                                            <a href="{{ route('expenses.show', $expense) }}" class="text-blue-700 hover:text-blue-900 text-xs font-bold border border-blue-300 hover:border-blue-500 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100">
+                                                عرض
+                                            </a>
+                                            
+                                            @if(\App\Helpers\PermissionHelper::canEditExpense(auth()->user()))
+                                                <a href="{{ route('expenses.edit', $expense) }}" class="text-yellow-700 hover:text-yellow-900 text-xs font-bold border border-yellow-300 hover:border-yellow-500 px-2 py-1 rounded bg-yellow-50 hover:bg-yellow-100">
+                                                    تعديل
+                                                </a>
+                                            @endif
+                                            
+                                            @if(\App\Helpers\PermissionHelper::canDeleteExpense(auth()->user()))
+                                                <form method="POST" action="{{ route('expenses.destroy', $expense) }}" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-700 hover:text-red-900 text-xs font-bold border border-red-300 hover:border-red-500 px-2 py-1 rounded bg-red-50 hover:bg-red-100" 
+                                                            onclick="return confirm('هل تريد حذف هذا المصروف؟')">
+                                                        حذف
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

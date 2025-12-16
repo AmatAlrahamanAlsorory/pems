@@ -75,6 +75,7 @@ class User extends Authenticatable
     public function getRoleNameAttribute(): string
     {
         return match($this->role) {
+            'general_manager' => 'المدير العام',
             'financial_manager' => 'المدير المالي العام',
             'admin_accountant' => 'محاسب الإدارة',
             'production_manager' => 'مدير إنتاج الموقع',

@@ -32,7 +32,28 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('people.show', $person) }}" class="text-blue-600 hover:text-blue-800 text-sm">عرض</a>
+                                        <div class="flex gap-1">
+                                            <a href="{{ route('people.show', $person) }}" class="text-blue-700 hover:text-blue-900 text-xs font-bold border border-blue-300 hover:border-blue-500 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100">
+                                                عرض
+                                            </a>
+                                            
+                                            @if(\App\Helpers\PermissionHelper::canEditPerson(auth()->user()))
+                                                <a href="{{ route('people.edit', $person) }}" class="text-yellow-700 hover:text-yellow-900 text-xs font-bold border border-yellow-300 hover:border-yellow-500 px-2 py-1 rounded bg-yellow-50 hover:bg-yellow-100">
+                                                    تعديل
+                                                </a>
+                                            @endif
+                                            
+                                            @if(\App\Helpers\PermissionHelper::canDeletePerson(auth()->user()))
+                                                <form method="POST" action="{{ route('people.destroy', $person) }}" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-700 hover:text-red-900 text-xs font-bold border border-red-300 hover:border-red-500 px-2 py-1 rounded bg-red-50 hover:bg-red-100" 
+                                                            onclick="return confirm('هل تريد حذف هذا الشخص؟')">
+                                                        حذف
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

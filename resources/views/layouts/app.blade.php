@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'PEMS') }} - نظام إدارة المصروفات</title>
@@ -22,7 +22,9 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <script src="{{ asset('js/notifications.js') }}"></script>
+        <script src="{{ asset('js/notifications-live.js') }}"></script>
         <script src="{{ asset('js/ai-assistant.js') }}"></script>
+        <script src="{{ asset('js/responsive-charts.js') }}"></script>
         
         <!-- PWA Meta Tags -->
         <link rel="manifest" href="/manifest.json">
@@ -36,6 +38,7 @@
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
         
         <script src="{{ asset('js/offline.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('css/mobile-fixes.css') }}">
         
         @stack('styles')
     </head>
@@ -46,13 +49,7 @@
         <div class="min-h-screen">
             @include('layouts.navigation')
             
-            <!-- Notification Bar -->
-            <div id="notification-bar" class="hidden bg-blue-600 text-white px-4 py-2 text-center text-sm">
-                <span id="notification-text"></span>
-                <button onclick="document.getElementById('notification-bar').classList.add('hidden')" class="mr-4 text-white hover:text-gray-200">
-                    ×
-                </button>
-            </div>
+
 
             <!-- Page Heading -->
             @isset($header)

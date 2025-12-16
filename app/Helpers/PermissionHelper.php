@@ -6,39 +6,48 @@ class PermissionHelper
 {
     // تعريف الصلاحيات لكل دور
     private static $rolePermissions = [
+        'general_manager' => [
+            // كل الصلاحيات - المدير العام
+            'create_project', 'edit_project', 'delete_project', 'view_project',
+            'create_custody', 'edit_custody', 'delete_custody', 'approve_custody', 'view_custody',
+            'create_expense', 'edit_expense', 'delete_expense', 'approve_expense', 'view_expense',
+            'view_reports', 'export_reports', 'view_exceptions',
+            'manage_users', 'edit_user', 'delete_user', 'manage_locations', 'edit_location', 'delete_location', 'manage_people', 'edit_person', 'delete_person',
+            'view_dashboard', 'system_settings'
+        ],
         'financial_manager' => [
             // كل الصلاحيات - المدير المالي العام
             'create_project', 'edit_project', 'delete_project', 'view_project',
-            'create_custody', 'approve_custody', 'view_custody',
-            'create_expense', 'approve_expense', 'view_expense',
+            'create_custody', 'edit_custody', 'delete_custody', 'approve_custody', 'view_custody',
+            'create_expense', 'edit_expense', 'delete_expense', 'approve_expense', 'view_expense',
             'view_reports', 'export_reports', 'view_exceptions',
-            'manage_users', 'manage_locations', 'manage_people',
+            'manage_users', 'edit_user', 'delete_user', 'manage_locations', 'edit_location', 'delete_location', 'manage_people', 'edit_person', 'delete_person',
             'view_dashboard', 'system_settings'
         ],
         'admin_accountant' => [
             // محاسب الإدارة - مراقبة وموافقات
             'create_project', 'edit_project', 'view_project',
-            'create_custody', 'approve_custody', 'view_custody',
-            'create_expense', 'approve_expense', 'view_expense',
+            'create_custody', 'edit_custody', 'approve_custody', 'view_custody',
+            'create_expense', 'edit_expense', 'approve_expense', 'view_expense',
             'view_reports', 'export_reports', 'view_exceptions',
-            'manage_locations', 'manage_people', 'view_dashboard'
+            'manage_locations', 'edit_location', 'manage_people', 'edit_person', 'view_dashboard'
         ],
         'production_manager' => [
             // مدير الإنتاج - إدارة الموقع والموافقات المحدودة
             'create_project', 'view_project',
-            'create_custody', 'approve_custody', 'view_custody',
-            'create_expense', 'approve_expense', 'view_expense',
-            'view_reports', 'manage_locations', 'manage_people', 'view_dashboard'
+            'create_custody', 'edit_custody', 'approve_custody', 'view_custody',
+            'create_expense', 'edit_expense', 'approve_expense', 'view_expense',
+            'view_reports', 'manage_locations', 'edit_location', 'manage_people', 'edit_person', 'view_dashboard'
         ],
         'field_accountant' => [
-            // المحاسب الميداني - تسجيل وعرض
-            'view_project', 'create_custody', 'view_custody',
-            'create_expense', 'view_expense', 'view_dashboard'
+            // المحاسب الميداني - تسجيل وعرض وتعديل محدود
+            'view_project', 'create_custody', 'edit_custody', 'view_custody',
+            'create_expense', 'edit_expense', 'view_expense', 'view_dashboard'
         ],
         'financial_assistant' => [
-            // المساعد المالي - تسجيل فقط
+            // المساعد المالي - تسجيل وتعديل محدود
             'view_project', 'view_custody',
-            'create_expense', 'view_expense', 'view_dashboard'
+            'create_expense', 'edit_expense', 'view_expense', 'view_dashboard'
         ]
     ];
     
@@ -127,9 +136,75 @@ class PermissionHelper
         return self::hasPermission($user, 'system_settings');
     }
     
+    // صلاحيات العهد
+    public static function canEditCustody($user)
+    {
+        return self::hasPermission($user, 'edit_custody');
+    }
+    
+    public static function canDeleteCustody($user)
+    {
+        return self::hasPermission($user, 'delete_custody');
+    }
+    
+    public static function canViewCustody($user)
+    {
+        return self::hasPermission($user, 'view_custody');
+    }
+    
+    // صلاحيات المصروفات
+    public static function canEditExpense($user)
+    {
+        return self::hasPermission($user, 'edit_expense');
+    }
+    
+    public static function canDeleteExpense($user)
+    {
+        return self::hasPermission($user, 'delete_expense');
+    }
+    
+    public static function canViewExpense($user)
+    {
+        return self::hasPermission($user, 'view_expense');
+    }
+    
+    // صلاحيات المستخدمين
+    public static function canEditUser($user)
+    {
+        return self::hasPermission($user, 'edit_user');
+    }
+    
+    public static function canDeleteUser($user)
+    {
+        return self::hasPermission($user, 'delete_user');
+    }
+    
+    // صلاحيات الأشخاص
+    public static function canEditPerson($user)
+    {
+        return self::hasPermission($user, 'edit_person');
+    }
+    
+    public static function canDeletePerson($user)
+    {
+        return self::hasPermission($user, 'delete_person');
+    }
+    
+    // صلاحيات المواقع
+    public static function canEditLocation($user)
+    {
+        return self::hasPermission($user, 'edit_location');
+    }
+    
+    public static function canDeleteLocation($user)
+    {
+        return self::hasPermission($user, 'delete_location');
+    }
+    
     public static function getRoleName($role)
     {
         $roles = [
+            'general_manager' => 'المدير العام',
             'financial_manager' => 'المدير المالي العام',
             'admin_accountant' => 'محاسب الإدارة',
             'production_manager' => 'مدير إنتاج الموقع',

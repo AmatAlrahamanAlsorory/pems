@@ -106,10 +106,51 @@ class ExpenseController extends Controller
 
     public function show(Expense $expense)
     {
-        $expense->load(['project', 'category', 'item', 'custody', 'user']);
+        $expense->load(['project', 'category', 'item', 'custody', 'user', 'person']);
         return view('expenses.show', compact('expense'));
     }
 
+    public function edit(Expense $expense)
+    {
+        $projects = Project::all();
+        $categories = ExpenseCategory::all();
+        $items = \App\Models\ExpenseItem::where('is_active', true)->get();
+        $custodies = Custody::with(['project', 'requestedBy'])->get();
+        $people = \App\Models\Person::where('is_active', true)->get();
+        
+        return view('expenses.edit', compact('expense', 'projects', 'categories', 'items', 'custodies', 'people'));
+    }
+    
+    public function update(Request $request, Expense $expense)
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,id',
+            'custody_id' => 'nullable|exists:custodies,id',
+            'expense_category_id' => 'required|exists:expense_categories,id',
+            'expense_item_id' => 'required|exists:expense_items,id',
+            'person_id' => 'nullable|exists:people,id',
+            'amount' => 'required|numeric|min:0',
+            'currency' => 'required|in:YER,SAR,USD',
+            'description' => 'required|string',
+            'expense_date' => 'required|date',
+            'invoice_number' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+        
+        $expense->update($validated);
+        
+        return redirect()->route('expenses.index')
+            ->with('success', 'تم تحديث المصروف بنجاح');
+    }
+    
+    public function destroy(Expense $expense)
+    {
+        $expense->delete();
+        
+        return redirect()->route('expenses.index')
+            ->with('success', 'تم حذف المصروف بنجاح');
+    }
+    
     public function approve(Expense $expense)
     {
         $approvalService = app(\App\Services\ApprovalService::class);

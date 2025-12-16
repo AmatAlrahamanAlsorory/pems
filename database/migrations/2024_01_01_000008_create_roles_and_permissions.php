@@ -11,6 +11,7 @@ return new class extends Migration
         // إضافة عمود الدور للمستخدمين
         Schema::table('users', function (Blueprint $table) {
             $table->enum('role', [
+                'general_manager',      // المدير العام
                 'financial_manager',    // المدير المالي العام
                 'admin_accountant',     // محاسب الإدارة
                 'production_manager',   // مدير إنتاج الموقع

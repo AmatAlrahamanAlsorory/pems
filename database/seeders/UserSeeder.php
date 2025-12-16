@@ -12,6 +12,13 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
+                'name' => 'المدير العام',
+                'email' => 'admin@pems.com',
+                'password' => Hash::make('admin123'),
+                'role' => 'financial_manager',
+                'location' => 'المقر الرئيسي'
+            ],
+            [
                 'name' => 'المدير المالي العام',
                 'email' => 'financial@pems.com',
                 'password' => Hash::make('password'),
@@ -20,7 +27,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name' => 'محاسب الإدارة',
-                'email' => 'admin@pems.com',
+                'email' => 'accountant@pems.com',
                 'password' => Hash::make('password'),
                 'role' => 'admin_accountant',
                 'location' => 'المقر الرئيسي'

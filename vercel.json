@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.php": {
+      "runtime": "vercel-php@0.6.0"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.php"
+    }
+  ],
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "DB_CONNECTION": "pgsql",
+    "DB_HOST": "aws-1-ap-southeast-2.pooler.supabase.com",
+    "DB_PORT": "5432",
+    "DB_DATABASE": "postgres",
+    "DB_USERNAME": "postgres.yhaonlrrndhimhrrmgsd",
+    "DB_PASSWORD": "p7wM8FnnNuOZcURM",
+    "FILESYSTEM_DISK": "digitalocean",
+    "SESSION_DRIVER": "database",
+    "CACHE_STORE": "database"
+  }
+}
