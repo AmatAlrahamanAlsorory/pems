@@ -1,45 +1,31 @@
+# (1) Base Image: استخدم صورة PHP-FPM مع Alpine Linux
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies
-RUN apk add --no-cache \
+# (2) تثبيت متطلبات النظام
+RUN apk update && apk add \
     git \
     curl \
-    libpng-dev \
     libxml2-dev \
-    zip \
-    unzip \
+    libzip-dev \
     nodejs \
     npm \
-    postgresql-dev
+    && docker-php-ext-install pdo_mysql zip
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql gd xml
+# (3) إعداد مجلد العمل ونسخ الكود
+WORKDIR /var/www/html
+COPY . .
 
-# Get latest Composer
+# (4) تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
-WORKDIR /var/www
-
-# Copy existing application directory contents
-COPY . /var/www
-
-# Copy existing application directory permissions
-COPY --chown=www-data:www-data . /var/www
-
-# Install dependencies
+# (5) تثبيت تبعيات PHP و NPM
 RUN composer install --no-dev --optimize-autoloader
-RUN npm install && npm run build
+RUN npm install
+RUN npm run build
 
-# Generate application key
-RUN php artisan key:generate --force
+# (6) إعداد صلاحيات الملفات
+RUN chown -R www-data:www-data /var/www/html/storage \
+    && chown -R www-data:www-data /var/www/html/bootstrap/cache
 
-# Create storage link
-RUN php artisan storage:link
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
-# Expose port 8000 and start php-fpm server
-EXPOSE 8000
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# (7) أمر التشغيل
+CMD php artisan serve --host 0.0.0.0 --port 8080
