@@ -1,32 +1,23 @@
 services:
   - type: web
-    name: pems-app
+    name: pems
     env: php
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      npm install
-      npm run build
-      php artisan key:generate --force
-      php artisan migrate --force
-      php artisan db:seed --force
-    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    buildCommand: composer install --no-dev --optimize-autoloader && npm install && npm run build
+    startCommand: php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=$PORT
     envVars:
+      - key: APP_NAME
+        value: PEMS
       - key: APP_ENV
         value: production
+      - key: APP_KEY
+        value: base64:E4RxCe2GSycdoxi3mp6fUa5QF2SHNvAlFAb2+Hdoisk=
       - key: APP_DEBUG
         value: false
-      - key: LOG_LEVEL
-        value: error
-      - key: SESSION_DRIVER
-        value: database
-      - key: CACHE_STORE
-        value: database
-      - key: QUEUE_CONNECTION
-        value: database
-      - key: FILESYSTEM_DISK
-        value: digitalocean
-
-databases:
-  - name: pems-db
-    databaseName: pems
-    user: pems_user
+      - key: APP_LOCALE
+        value: ar
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DEMO_MODE
+        value: true
+      - key: SEED_DEMO_DATA
+        value: true
