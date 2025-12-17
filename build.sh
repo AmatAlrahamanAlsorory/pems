@@ -2,15 +2,15 @@
 set -o errexit
 
 # Install PHP dependencies
-composer install --no-dev --optimize-autoloader --no-interaction
+composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Install Node dependencies and build assets
-npm install
+npm install --production
 npm run build
 
-# Create SQLite database if it doesn't exist
-touch database/database.sqlite
-
 # Set permissions
-chmod 755 storage/logs
-chmod 755 bootstrap/cache
+chmod -R 755 storage
+chmod -R 755 bootstrap/cache
+
+# Cache config for production
+php artisan config:cache
